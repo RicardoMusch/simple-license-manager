@@ -35,7 +35,10 @@ def get_license():
     "Get's a license from the license pool if one is available, renames the license and tags it with the hostname, then set's the env variable"
 
     env = _get_argv("env")
-    licenserepo = _get_argv("licenserepo")
+    licenserepo = _get_argv("licenserepo").replace("\\", "/")
+    print(licenserepo)
+    exe = _get_argv("exe")
+    args = _get_argv("args")
 
     free_lic_list = []
     for lic in os.listdir(licenserepo):
@@ -74,8 +77,14 @@ def get_license():
         # set env to rlic path
         os.environ[env] = rlic_path
 
+        print os.environ[env]
+
         print("Got a license!")
         print("Starting application...")   
+        os.system(r'"'+exe+'"')
+
+        # After application closes, reset the license so it's not in use
+        reset_licenses(os.path.basename(rlic_path))
 
 def check_licenses():
     "Check's the license repo for available licenses and in use licenses"
@@ -97,24 +106,35 @@ def check_licenses():
         if not ".inuse" in lic:
             print(lic)
 
-def reset_licenses():
-    "Resets all licenses in the license repo so they can be picked up again..."
+def reset_licenses(license_name=None):
+    "Resets a specific license or all licenses in the license repo so they can be picked up again..."
 
     env = _get_argv("env")
     licenserepo = _get_argv("licenserepo")
+            
 
     lic_list = []
     for lic in os.listdir(licenserepo):
         if ".inuse" in lic:
-            print("Resetting license: {}".format(lic))
-            lic_path = os.path.join(licenserepo, lic)
 
-            ext = lic.split(".")[-1]
-            rlic = lic.split(".inuse")[0]
-            rlic = rlic+"."+ext
-            rlic_path = os.path.join(licenserepo, rlic)
+            def reset_lic():
+                print("Resetting license: {}".format(lic))
+                lic_path = os.path.join(licenserepo, lic)
 
-            os.rename(lic_path, rlic_path)
+                ext = lic.split(".")[-1]
+                rlic = lic.split(".inuse")[0]
+                rlic = rlic+"."+ext
+                rlic_path = os.path.join(licenserepo, rlic)
+
+                os.rename(lic_path, rlic_path)
+
+            if license_name:
+                # only reset license_name
+                if lic.lower() == license_name.lower():
+                    reset_lic()
+            else:
+                # Reset every license
+                reset_lic()
 
     print(" ")
     print("DONE!...")  
