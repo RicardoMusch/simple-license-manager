@@ -19,7 +19,6 @@ import socket
 def main():
 
     os.system("cls")
-    _set_application_title()
     _header()
     
     if _get_argv("check"):
@@ -196,9 +195,6 @@ def _paddedLine():
 
 def _dashingLine():
     print("-------------------------------------------")
-
-def _set_application_title():
-    system("title SIMPLE LICENSE MANAGER - by Ricardo Terence Musch")
 
 def _header():
     system("TITLE SIMPLE LICENSE MANAGER")
