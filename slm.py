@@ -12,11 +12,14 @@ python -m slm.py -env SUBSTANCE_PAINTER_LICENSE -licenserepo:%license_repo%
 """
 import sys
 import os
+from os import system
 import socket
 
 
 def main():
 
+    os.system("cls")
+    _set_application_title()
     _header()
     
     if _get_argv("check"):
@@ -32,20 +35,10 @@ def main():
         get_license()
 
 def get_license():
-    "Get's a license from the license pool if one is available, renames the license and tags it with the hostname, then set's the env variable"
+    "Main functionality called by the -get argument"
 
-    env = _get_argv("env")
-    licenserepo = _get_argv("licenserepo").replace("\\", "/")
-    print(licenserepo)
-    exe = _get_argv("exe")
-    args = _get_argv("args")
-
-    free_lic_list = []
-    for lic in os.listdir(licenserepo):
-        if not ".inuse" in lic:
-            free_lic_list.append(lic)
-
-    if free_lic_list == []:
+    # If no licenses are free, tell user and exit
+    if get_free_license_list() == []:
         _div()
         print("NO FREE LICENSES AVAILABLE")
         print(" ")
@@ -55,8 +48,29 @@ def get_license():
         sys.exit(1)
 
     else:
-        print("Requesting a license...")
-        lic = free_lic_list[0]
+        request_license()
+
+def request_license():
+    """
+    The actual process of requesting a license file, renaming it, pointing the env var to it 
+    and launching the application, waiting for it's exit and then resetting the lic.
+    """
+    licenserepo = _get_argv("licenserepo").replace("\\", "/")
+
+    print("Requesting a license...")
+    _dashingLine()
+
+    # check if a used license with current hostname may exist
+    used_hostname_lic = check_if_hostname_in_use()
+    if used_hostname_lic:
+        print("Found a used license for this computer, using the same license instead...")
+        use_license(used_hostname_lic)
+        
+        # set a lock environ so this session wont rename the lic back but ethe original will do that
+        os.environ["SLM_MULTIPLE_SESSIONS"] = "True"
+
+    else:
+        lic = get_free_license_list()[0]
         ext = None
         if "." in lic:
             ext = lic.split(".")[-1]
@@ -74,46 +88,57 @@ def get_license():
         # rename
         os.rename(lic_path, rlic_path)
 
-        # set env to rlic path
-        os.environ[env] = rlic_path
+        # use license and start app
+        use_license(rlic_path)
 
-        print os.environ[env]
+def use_license(license_path):
+    "Uses the license file specified, sets the env, calls and waits for the application, then resets the license after closing"
+    env = _get_argv("env")
+    exe = _get_argv("exe")
+    args = _get_argv("args")
+    
+    # set env to rlic path
+    os.environ[env] = license_path
+    print("Got a license!")
+    print("Starting application...")   
+    os.system(r'"'+exe+'"')
 
-        print("Got a license!")
-        print("Starting application...")   
-        os.system(r'"'+exe+'"')
-
+    if not "SLM_MULTIPLE_SESSIONS" in os.environ:
         # After application closes, reset the license so it's not in use
-        reset_licenses(os.path.basename(rlic_path))
+        print("Detected application close, returning license...")
+        reset_licenses(os.path.basename(license_path))
+    else:
+        print("Not resetting license as multiple sessions are running...")
 
 def check_licenses():
     "Check's the license repo for available licenses and in use licenses"
-
     env = _get_argv("env")
     licenserepo = _get_argv("licenserepo")
 
-    _div()
     print("Licenses in use:")
-    _paddedLine()
+    _dashingLine()
+    lics = False
     for lic in os.listdir(licenserepo):
         if ".inuse" in lic:
             print(lic)
+            lics = True
+    if not lics:
+        print("- None")
 
-    _div()
+    print(" ")
     print("Licenses not in use:")
-    _paddedLine()
+    _dashingLine()
     for lic in os.listdir(licenserepo):
         if not ".inuse" in lic:
             print(lic)
 
 def reset_licenses(license_name=None):
     "Resets a specific license or all licenses in the license repo so they can be picked up again..."
+    licenserepo = _get_argv("licenserepo")    
 
-    env = _get_argv("env")
-    licenserepo = _get_argv("licenserepo")
-            
-
-    lic_list = []
+    print(" ")
+    print("Resetting licence(s)...")  
+    _dashingLine()
     for lic in os.listdir(licenserepo):
         if ".inuse" in lic:
 
@@ -139,6 +164,26 @@ def reset_licenses(license_name=None):
     print(" ")
     print("DONE!...")  
 
+def check_if_hostname_in_use():
+    "Returns either a path to a license file that has the current hostname in it so we can reuse it, else returns False"
+    licenserepo = _get_argv("licenserepo").replace("\\", "/")
+    hostname = _get_hostname()
+    # check if we are already using a lic with this hostname, then choose that
+    for lic in os.listdir(licenserepo):
+        if hostname in lic:
+            lic_path = os.path.join(licenserepo, lic).replace("\\", "/")
+            return lic_path
+    return False                
+
+def get_free_license_list():
+    "Returns a list of free license files in the licenserepo or an empty list if none are available"
+    licenserepo = _get_argv("licenserepo").replace("\\", "/")
+    free_lic_list = []
+    for lic in os.listdir(licenserepo):
+        if not ".inuse" in lic:
+            free_lic_list.append(lic)
+    return free_lic_list
+
 
 # Helper functions _
 
@@ -149,7 +194,14 @@ def _div():
 def _paddedLine():
     print("###########################################")
 
+def _dashingLine():
+    print("-------------------------------------------")
+
+def _set_application_title():
+    system("title SIMPLE LICENSE MANAGER - by Ricardo Terence Musch")
+
 def _header():
+    system("TITLE SIMPLE LICENSE MANAGER")
     _div()
     print("SIMPLE LICENSE MANAGER")
     _paddedLine()
