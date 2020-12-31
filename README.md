@@ -10,7 +10,7 @@ i.e.
 
 SUBSTANCE_PAINTER_LICENSE = "path/to/substance/license.key"
 
-To aid in using multiple licenses in a studio environement I created slm.
+To aid in using multiple licenses in a studio environement slm was created.
 It's a simple command line tool to aid in file based license key management.
 
 # Requirements
@@ -41,8 +41,6 @@ Attempts to get a license from the license repository, then sets the specified e
 After exitting the application the license will be "returned" automatically.
 If a license is already in use by the current computer (i.e. we start the aplication multiple times) the subsequent application starts will consume the existing license and the original session that got the license will be the one to return the license.
 
-* A feature to look into is to scan the running exectutables and only return the license if the current session is the last running.
-
     slm.py -get -licenserepo:"PATH/TO/LICENSE/FILES" -env:ENVIRONEMENT_VAR_NAME -exe:"PATH/TO/APPLICATION/EXECUTABLE.exe"
 
 
@@ -63,3 +61,7 @@ If a license is already in use by the current computer (i.e. we start the aplica
     Resetting license: Substance_Painter_lic1.inuse.hostname.key
 
     DONE!...
+
+
+## Planned updates
+- A feature to scan the running exectutables and only return the license if the current session is the last running.
