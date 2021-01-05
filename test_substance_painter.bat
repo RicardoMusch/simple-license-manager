@@ -1,1 +1,0 @@
-slm.py -get -licenserepo:"C:\Users\ricardom\Documents\github\_test_files\substance_lics\lics" -env:SUBSTANCE_PAINTER_LICENSE -exe:"C:/Program Files/Allegorithmic/Substance Painter/Substance Painter.exe"

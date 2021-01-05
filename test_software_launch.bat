@@ -1,0 +1,1 @@
+slm.py -get -licenserepo:"C:\Users\ricardom\Documents\github\_test_files\lics\lics" -env:SOME_SOFTWARE_LICENSE -exe:"C:/Program Files/some_software/software.exe"

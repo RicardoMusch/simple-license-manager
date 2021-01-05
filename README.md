@@ -2,13 +2,12 @@
  Simple License Manager application to manage file based or env variable based licenses
 
 # Aim
-Some software like Substance Painter gives out individual license files when buying multiple licences.
-(Floating licenses/site licences are available but expensive if you only need a few)
+Some software gives out individual license files when buying multiple licences.
 
 Such software usually requires a ENV variable to point to the license file.
 i.e.
 
-SUBSTANCE_PAINTER_LICENSE = "path/to/substance/license.key"
+SOME_SOFTWARE_LICENSE = "path/to/some_software/license.key"
 
 To aid in using multiple licenses in a studio environement slm was created.
 It's a simple command line tool to aid in file based license key management.
@@ -58,7 +57,7 @@ If a license is already in use by the current computer (i.e. we start the aplica
 
     Resetting licence(s)...
     -------------------------------------------
-    Resetting license: Substance_Painter_lic1.inuse.hostname.key
+    Resetting license: some_software.inuse.hostname.key
 
     DONE!...
 
